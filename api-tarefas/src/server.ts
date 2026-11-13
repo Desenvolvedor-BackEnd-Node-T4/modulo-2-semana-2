@@ -1,6 +1,6 @@
 import express from 'express'
 import type { Request, Response } from 'express'
-import type { Tarefa, NovaTarefa, AtualizarTarefa } from './types/tarefas.js'
+import type { Tarefa, NovaTarefa, AtualizarTarefa, SubstituirTarefa } from './types/tarefas.js'
 
 let tarefas: Tarefa[] = [{id: 1, titulo: 'Estudar Express', concluida: false}]
 let proximoId = 2
@@ -10,6 +10,7 @@ type ReqId = Request<{ id:string }>
 type ReqFiltro = Request<{}, {}, {}, {concluida?: string}>
 type ReqCriar = Request<{}, {}, NovaTarefa>
 type ReqAtualizar = Request<{ id:string }, {}, AtualizarTarefa>
+type ReqSubstituir = Request<{id:string}, {}, SubstituirTarefa>
 
 const app = express()
 const PORT = 3000
@@ -62,6 +63,24 @@ app.delete('/tarefas/:id', (req: ReqId, res: Response) => {
     if(!tarefas.some((t) => t.id === id)) return res.status(404).json(NAO_ENC)
     tarefas = tarefas.filter((t) => t.id !== id)
     res.sendStatus(204)
+})
+
+// PUT /tarefas/:id
+app.put('/tarefas/:id', (req: ReqSubstituir, res: Response) => {
+    const id = Number(req.params.id)
+    const i = tarefas.findIndex((t) => t.id === id)
+    const atual = tarefas[i]
+    if (!atual) return res.status(404).json(NAO_ENC)
+    const { titulo, concluida } = req.body ?? {}
+
+    console.log(titulo, concluida)
+
+    if(titulo === undefined || concluida === undefined) {
+        return res.status(400)
+            .json({erro: 'todos os campos são obrigatórios'})
+    }
+    tarefas[i] = {id, titulo, concluida}
+    res.json(tarefas[i])
 })
 
 app.listen(PORT, () => {
