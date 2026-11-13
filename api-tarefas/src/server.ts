@@ -1,6 +1,8 @@
 import express from 'express'
 import type { Request, Response } from 'express'
 import type { Tarefa, NovaTarefa, AtualizarTarefa, SubstituirTarefa } from './types/tarefas.js'
+import { logger } from './middlewares/logger.js';
+import { validarTarefa } from './middlewares/validarTarefa.js';
 
 let tarefas: Tarefa[] = [{id: 1, titulo: 'Estudar Express', concluida: false}]
 let proximoId = 2
@@ -15,7 +17,9 @@ type ReqSubstituir = Request<{id:string}, {}, SubstituirTarefa>
 const app = express()
 const PORT = 3000
 
+// Middlewares
 app.use(express.json())
+app.use(logger)
 
 // GET /tarefas?concluida=true
 app.get('/tarefas', (req: ReqFiltro, res: Response<Tarefa[]>) => {
@@ -34,7 +38,7 @@ app.get('/tarefas/:id', (req: ReqId, res: Response) => {
 })
 
 // POST /tarefas
-app.post('/tarefas', (req: ReqCriar, res: Response) => {
+app.post('/tarefas', validarTarefa, (req: ReqCriar, res: Response) => {
     const { titulo } = req.body ?? {}
     if (!titulo){
         return res.status(400)
@@ -66,7 +70,7 @@ app.delete('/tarefas/:id', (req: ReqId, res: Response) => {
 })
 
 // PUT /tarefas/:id
-app.put('/tarefas/:id', (req: ReqSubstituir, res: Response) => {
+app.put('/tarefas/:id', validarTarefa, (req: ReqSubstituir, res: Response) => {
     const id = Number(req.params.id)
     const i = tarefas.findIndex((t) => t.id === id)
     const atual = tarefas[i]
