@@ -7,7 +7,7 @@ const router = Router()
 router.get('/', ctrl.listar)
 router.get('/:id', ctrl.buscarPorId)
 router.post('/', validarTarefa, ctrl.criar)
-router.patch('/:id', validarTarefa, ctrl.atualizar)
+router.patch('/:id', ctrl.atualizar)
 router.delete('/:id', ctrl.remover)
 
 export default router
